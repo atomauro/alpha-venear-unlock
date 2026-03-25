@@ -1,0 +1,14 @@
+.claude/
+.git/
+.github/
+.DS_Store
+node_modules/
+**/node_modules/
+.next/
+out/
+coverage/
+tests/
+tests/reports/
+.env
+.env.local
+.env.*.local

@@ -1,6 +1,11 @@
 # veNEAR Alpha Unlock Interface
 
-A web interface for unlocking NEAR tokens from the veNEAR Alpha contracts (`v.voteagora.near`). This application implements the complete 7-step unlock process described in the [official guide](https://github.com/voteagora/agora-near/wiki/How-to:-Unlock-NEAR-in-veNEAR-Alpha-Contracts).
+[![Fmt](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/fmt.yml/badge.svg?branch=main&event=push)](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/fmt.yml)
+[![Lint](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/lint.yml/badge.svg?branch=main&event=push)](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/lint.yml)
+[![Tests](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/tests.yml/badge.svg?branch=main&event=push)](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/tests.yml)
+[![Build](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/HackHumanityOrg/alpha-venear-unlock/actions/workflows/build.yml)
+
+A Next.js web interface for unlocking NEAR tokens from the veNEAR Alpha contracts (`v.voteagora.near`). Implements the complete 7-step unlock process described in the [official guide](https://github.com/voteagora/agora-near/wiki/How-to:-Unlock-NEAR-in-veNEAR-Alpha-Contracts).
 
 ## What This App Does
 
@@ -14,78 +19,143 @@ If you locked NEAR tokens in the House of Stake (HoS) Alpha veNEAR contracts, th
 6. **Transfer tokens** - Move NEAR to your main account
 7. **Browse all accounts** - Public list of all locked veNEAR accounts
 
-### The Unlock Process
+## Prerequisites
 
-**Step 1: Connect & View**
+- Node.js `20.x`
+- pnpm
+- Docker Engine + Docker Compose v2 for container deployment
 
-- Connect your NEAR wallet
-- App finds your lockup contract via `v.voteagora.near`
-- Displays your locked, pending, and liquid balances
+## Quick Start
 
-**Step 2: Begin Unlock**
+```bash
+pnpm install
+pnpm format:check
+pnpm lint
+pnpm build
+```
 
-- Click "Begin Unlock" to start the process
-- Initiates a 91.25-day (3-month) waiting period
-- Requires wallet signature to confirm
+## Runtime Configuration
 
-**Step 3: Wait & Monitor**
+The app connects directly to NEAR mainnet RPC and requires no environment variables to run.
 
-- Progress bar shows unlock completion percentage
-- Countdown timer displays time remaining
-- Balances auto-refresh every 30 seconds
+## Deployment Workflow
 
-**Step 4: Handle Staking (if applicable)**
+1. Build and start the app with Docker, Docker Compose, or the standalone Node runtime.
+2. Verify `http://127.0.0.1:3000/healthz` locally or `https://<your-domain>/healthz` after deployment.
 
-If your tokens are staked with validators, you must:
+### Docker
 
-1. **Unstake** - Remove tokens from the staking pool
-2. **Wait** - 2-4 epochs (12-24 hours) for unstaking to complete
-3. **Withdraw** - Move tokens from staking pool back to lockup contract
+Build the production image:
 
-The app automatically:
+```bash
+pnpm docker:build
+```
 
-- Detects if you have staked tokens
-- Shows your staking status (Staked/Unstaking/Unstaked)
-- Provides buttons to unstake and withdraw
-- Prevents unlock completion until staking operations are done
+Run it:
 
-**Step 5: Complete Unlock**
+```bash
+docker run --rm \
+  --name alpha-venear-unlock \
+  -p 3000:3000 \
+  alpha-venear-unlock
+```
 
-- After 91.25 days, the "Complete Unlock" button becomes active
-- Click to finalize the unlock
-- Tokens move from "Pending" to "Liquid" balance
+Smoke check:
 
-**Step 6: Transfer to Your Account**
+```bash
+pnpm health
+```
 
-- Click "Transfer to My Account"
-- Moves NEAR from the lockup contract to your wallet
-- Tokens are now fully under your control
+The image uses Next.js standalone output, runs as a non-root user, and honors `PORT`/`HOSTNAME` at runtime.
 
-_Note: The app uses 125 TGas for most operations_
+### Docker Compose
 
-### Additional Features
+Start the stack:
 
-**Public Accounts List**
+```bash
+pnpm docker:up
+```
 
-- View all accounts with locked veNEAR
-- See unlock progress and status for each account
-- Track total locked amounts across the protocol
-- Links to NEARBlocks for transaction verification
+Inspect and verify:
 
-## Important Notes
+```bash
+docker compose ps
+docker compose logs -f web
+pnpm health
+```
 
-- **Unlock Period**: Once you begin unlock, you must wait 91.25 days before completing it
-- **Staking**: If your tokens are staked, you must unstake and withdraw before completing unlock
-- **Wallet Signature**: All operations require your wallet signature
+Stop it:
+
+```bash
+pnpm docker:down
+```
+
+### Standalone Node Runtime
+
+If you want to run the standalone server without Docker:
+
+```bash
+pnpm build
+HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js
+```
+
+## Local Development
+
+Run the app in dev mode:
+
+```bash
+pnpm dev
+```
+
+Open `http://localhost:3000`.
+
+Production-like local run:
+
+```bash
+pnpm build
+pnpm start
+```
+
+## Quality Gates
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm build
+pnpm test:simple
+```
+
+## Testing
+
+Contract tests run against NEAR mainnet RPC to verify lockup account state:
+
+```bash
+pnpm test:simple              # Non-staking accounts
+pnpm test:staking              # Accounts with staking pools
+pnpm test:contract             # All accounts
+pnpm test:all                  # All accounts with report output
+```
+
+## GitHub Workflows
+
+| Workflow | Purpose                                                                           |
+| -------- | --------------------------------------------------------------------------------- |
+| `Fmt`    | Runs `pnpm format:check`                                                          |
+| `Lint`   | Runs `pnpm lint`                                                                  |
+| `Tests`  | Runs `pnpm test:simple` (non-staking contract tests)                              |
+| `Build`  | Builds the app, validates `docker-compose.yml`, and smoke-builds the Docker image |
 
 ## References
-
-Based on the official documentation:
 
 - [How to Unlock NEAR in veNEAR Alpha Contracts](https://github.com/voteagora/agora-near/wiki/How-to:-Unlock-NEAR-in-veNEAR-Alpha-Contracts) - Official unlock guide
 - [House of Stake Contracts](https://github.com/houseofstake/house-of-stake-contracts) - Contract source code
 - [v.voteagora.near](https://nearblocks.io/address/v.voteagora.near) - veNEAR contract on NEARBlocks
 
----
+## Artifact Index
 
-**Built by [HackHumanity](https://hackhumanity.com)** | [X/Twitter](https://x.com/HackHumanityCo) | [GitHub](https://github.com/HackHumanityOrg)
+- Root deployment guide: `README.md`
+- Docker ignore: `.dockerignore`
+- Compose stack: `docker-compose.yml`
+- Dockerfile: `Dockerfile`
+- Health endpoint: `src/app/healthz/route.ts`
+- Workflow files: `.github/workflows/fmt.yml`, `.github/workflows/lint.yml`, `.github/workflows/tests.yml`, `.github/workflows/build.yml`

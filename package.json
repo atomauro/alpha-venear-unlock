@@ -12,7 +12,11 @@
     "test:contract": "ava 'tests/accounts/**/*.test.ts' --verbose",
     "test:simple": "ava 'tests/accounts/!(407|agoraeng2|agoraeng3|agoraeng5|agoraeng6|agoraeng7|aiml|alan777|alansicairos|atomauro1|grmsn|mob|natcrypto|phasfernandes|q8i|root|vote.mob).test.ts' --verbose",
     "test:staking": "ava 'tests/accounts/@(407|agoraeng2|agoraeng3|agoraeng5|agoraeng6|agoraeng7|aiml|alan777|alansicairos|atomauro1|grmsn|mob|natcrypto|phasfernandes|q8i|root|vote.mob).test.ts' --verbose",
-    "test:all": "mkdir -p tests/reports && ava 'tests/accounts/**/*.test.ts' --verbose > tests/reports/test-report-$(date +%Y%m%d-%H%M%S).txt 2>&1"
+    "test:all": "mkdir -p tests/reports && ava 'tests/accounts/**/*.test.ts' --verbose > tests/reports/test-report-$(date +%Y%m%d-%H%M%S).txt 2>&1",
+    "docker:build": "docker build -t alpha-venear-unlock .",
+    "docker:up": "docker compose up --build -d",
+    "docker:down": "docker compose down --remove-orphans",
+    "health": "curl -fsS http://127.0.0.1:3000/healthz"
   },
   "dependencies": {
     "@near-js/transactions": "^2.5.1",
